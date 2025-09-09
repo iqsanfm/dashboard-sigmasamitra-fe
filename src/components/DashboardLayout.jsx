@@ -1,22 +1,23 @@
 import ProtectedRoute from './ProtectedRoute';
 import React, { useState, useEffect } from 'react';
-import { Link, Outlet, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom'; // Import useLocation
+import { Link, Outlet, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import DashboardPage from '../pages/DashboardPage';
 import StaffsPage from '../pages/StaffsPage';
 import ClientsPage from '../pages/ClientsPage';
 import JobDetailPage from '../pages/JobDetailPage';
 import CreateJobPage from '../pages/CreateJobPage';
-import MonthlyJobsPage from '../pages/MonthlyJobsPage'; // Import MonthlyJobsPage
+import MonthlyJobsPage from '../pages/MonthlyJobsPage';
+import EditJobPage from '../pages/EditJobPage'; // Import EditJobPage
 
 const DashboardLayout = ({ userInfo, onLogout }) => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation(); // Initialize useLocation
+  const location = useLocation();
 
   // Effect for initial role-based redirection
   useEffect(() => {
-    if (userInfo && location.pathname === '/dashboard') { // Only redirect if current path is /dashboard
-      if (userInfo.role === 'ADMIN') { // Changed from 'admin' to 'ADMIN'
+    if (userInfo && location.pathname === '/dashboard') {
+      if (userInfo.role === 'ADMIN') {
         navigate('/dashboard/admin-home', { replace: true });
       } else {
         navigate('/dashboard/user-home', { replace: true });
@@ -51,27 +52,29 @@ const DashboardLayout = ({ userInfo, onLogout }) => {
         <nav className="flex-1 px-2 py-4 space-y-2">
           {/* Update links to point to specific home pages */}
           {userInfo?.role === 'ADMIN' ? (
-            <Link to="/dashboard/admin-home" className="block px-4 py-2 rounded hover:bg-gray-700">
+            <Link to="/dashboard/admin-home" className={`block py-3 rounded hover:bg-gray-700 flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
               {isSidebarExpanded ? 'Admin Home' : 'AH'}
             </Link>
           ) : (
-            <Link to="/dashboard/user-home" className="block px-4 py-2 rounded hover:bg-gray-700">
+            <Link to="/dashboard/user-home" className={`block py-3 rounded hover:bg-gray-700 flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
               {isSidebarExpanded ? 'User Home' : 'UH'}
             </Link>
           )}
 
           {userInfo?.role === 'ADMIN' && (
             <>
-              <Link to="/dashboard/staffs" className="block px-4 py-2 rounded hover:bg-gray-700">
+              <Link to="/dashboard/staffs" className={`block py-3 rounded hover:bg-gray-700 flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
                 {isSidebarExpanded ? 'Staffs' : 'S'}
               </Link>
-              <Link to="/dashboard/clients" className="block px-4 py-2 rounded hover:bg-gray-700">
+              <Link to="/dashboard/clients" className={`block py-3 rounded hover:bg-gray-700 flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
                 {isSidebarExpanded ? 'Clients' : 'C'}
               </Link>
               {/* New Jobs Section */}
               <div className="py-2">
-                <span className="block px-4 text-xs font-semibold text-gray-400 uppercase">Pekerjaan</span>
-                <Link to="/dashboard/jobs/monthly" className="block px-4 py-2 rounded hover:bg-gray-700">
+                <span className={`block py-3 text-xs font-semibold text-gray-400 uppercase flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
+                  {isSidebarExpanded ? 'Pekerjaan' : 'PJ'} {/* Conditional rendering */}
+                </span>
+                <Link to="/dashboard/jobs/monthly" className={`block py-3 rounded hover:bg-gray-700 flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
                   {isSidebarExpanded ? 'Pekerjaan Bulanan' : 'PB'}
                 </Link>
                 {/* Add other job types here */}
@@ -105,9 +108,10 @@ const DashboardLayout = ({ userInfo, onLogout }) => {
             <Route path="admin-home" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><DashboardPage userInfo={userInfo} onLogout={onLogout} /></ProtectedRoute>} />
             <Route path="staffs" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><StaffsPage /></ProtectedRoute>} />
             <Route path="clients" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><ClientsPage userInfo={userInfo} /></ProtectedRoute>} />
-            <Route path="jobs/monthly" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><MonthlyJobsPage /></ProtectedRoute>} /> {/* New Route */}
+            <Route path="jobs/monthly" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><MonthlyJobsPage /></ProtectedRoute>} />
             <Route path="create-job" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateJobPage /></ProtectedRoute>} />
             <Route path="jobs/:job_type/:job_id" element={<ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'KEUANGAN']} userInfo={userInfo}><JobDetailPage /></ProtectedRoute>} />
+            <Route path="jobs/:job_type/:job_id/edit" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><EditJobPage /></ProtectedRoute>} />
             {/* Redirect root /dashboard to the appropriate home based on role */}
             <Route
               path="/"

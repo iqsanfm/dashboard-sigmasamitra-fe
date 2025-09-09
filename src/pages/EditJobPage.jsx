@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useNotification } from '../contexts/NotificationContext';
-import { getJobDetails, updateJob, getClients, getStaffs } from '../utils/api'; // Assuming updateJob exists
+import { getJobDetails, updateJob, getClients, getStaffs, createMonthlyTaxReport, updateMonthlyTaxReport, deleteMonthlyTaxReport } from '../utils/api'; // Import new functions
 
 const EditJobPage = () => {
   const { job_type, job_id } = useParams();
@@ -23,6 +23,8 @@ const EditJobPage = () => {
   const [staffs, setStaffs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [jobName, setJobName] = useState('');
+  const [originalReports, setOriginalReports] = useState([]); // New state to store original reports
 
   useEffect(() => {
     console.log('EditJobPage: useEffect triggered for job_type:', job_type, 'job_id:', job_id);
@@ -40,9 +42,10 @@ const EditJobPage = () => {
           assigned_pic_staff_sigma_id: jobData.assigned_pic_staff_sigma_id || '',
           overall_status: jobData.overall_status || '',
           correction_status: jobData.correction_status || '',
-          reports: jobData.tax_reports || [], // API returns tax_reports, form uses reports
+          reports: jobData.tax_reports || [],
           // Map other fields as necessary
         });
+        setOriginalReports(jobData.tax_reports || []); // Store original reports
 
         console.log('EditJobPage: Attempting to fetch clients...');
         const clientsData = await getClients();
@@ -53,6 +56,15 @@ const EditJobPage = () => {
         const staffsData = await getStaffs();
         console.log('EditJobPage: Staffs data fetched:', staffsData);
         setStaffs(staffsData);
+
+        // Construct job name after all data is fetched
+        const client = clientsData.find(c => c.client_id === jobData.client_id);
+        if (client) {
+          const monthName = jobData.job_month ? new Date(0, jobData.job_month - 1).toLocaleString('id-ID', { month: 'long' }) : '';
+          setJobName(`${client.client_name} - ${monthName} ${jobData.job_year}`);
+        } else {
+          setJobName(`Job ID: ${job_id}`); // Fallback if client not found
+        }
 
         console.log('EditJobPage: All data fetched successfully.');
       } catch (err) {
@@ -103,28 +115,55 @@ const EditJobPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = { ...formData };
+      // Prepare job data for update (excluding reports)
+      const jobPayload = { ...formData };
+      delete jobPayload.reports; // Remove reports from the main job payload
 
-      // Convert numeric fields to actual numbers
-      payload.job_year = parseInt(payload.job_year);
-      if (payload.job_month) {
-        payload.job_month = parseInt(payload.job_month);
+      // Convert numeric fields to actual numbers for jobPayload
+      jobPayload.job_year = parseInt(jobPayload.job_year);
+      if (jobPayload.job_month) {
+        jobPayload.job_month = parseInt(jobPayload.job_month);
       }
 
-      // Convert payment_amount in reports to numbers
-      if (payload.reports && payload.reports.length > 0) {
-        payload.reports = payload.reports.map(report => ({
-          ...report,
-          payment_amount: parseInt(report.payment_amount), // Assuming payment_amount is always an integer
-        }));
+      // Update main job details
+      await updateJob(job_type, job_id, jobPayload);
+
+      // Process reports: new, updated, and deleted
+      const currentReportIds = new Set(formData.reports.filter(r => r.report_id).map(r => r.report_id));
+      const originalReportIds = new Set(originalReports.map(r => r.report_id));
+
+      // Reports to delete
+      const reportsToDelete = originalReports.filter(
+        (originalReport) => !currentReportIds.has(originalReport.report_id)
+      );
+
+      for (const report of reportsToDelete) {
+        await deleteMonthlyTaxReport(job_id, report.report_id);
       }
 
-      await updateJob(job_type, job_id, payload);
-      showNotification('Job updated successfully!', 'success');
+      // Reports to create or update
+      for (const report of formData.reports) {
+        const reportPayload = { ...report };
+        reportPayload.payment_amount = parseInt(reportPayload.payment_amount);
+
+        if (report.report_id && originalReportIds.has(report.report_id)) {
+          // Existing report, check if it's modified and update
+          const original = originalReports.find(r => r.report_id === report.report_id);
+          // Simple comparison, a more robust solution would deep compare
+          if (JSON.stringify(original) !== JSON.stringify(report)) {
+            await updateMonthlyTaxReport(job_id, report.report_id, reportPayload);
+          }
+        } else {
+          // New report
+          await createMonthlyTaxReport(job_id, reportPayload);
+        }
+      }
+
+      showNotification('Job and reports updated successfully!', 'success');
       navigate(`/dashboard/jobs/${job_type}/${job_id}`); // Redirect back to job detail
     } catch (err) {
-      setError(err.message || 'Failed to update job.');
-      showNotification(`Error: ${err.message || 'Failed to update job.'}`, 'error');
+      setError(err.message || 'Failed to update job or reports.');
+      showNotification(`Error: ${err.message || 'Failed to update job or reports.'}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -140,7 +179,7 @@ const EditJobPage = () => {
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Edit Job: {job_id}</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Edit Job: {jobName}</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Client Selection (Read-only for edit, or allow change if business logic permits) */}
         <div>

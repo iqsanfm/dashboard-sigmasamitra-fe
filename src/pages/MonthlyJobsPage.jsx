@@ -4,6 +4,7 @@ import { useNotification } from '../contexts/NotificationContext';
 import { getMonthlyJobs, deleteJob } from '../utils/api'; // Import deleteJob
 import UpdateJobStatusModal from '../components/UpdateJobStatusModal';
 import ConfirmationModal from '../components/ConfirmationModal'; // Import ConfirmationModal
+import useDebounce from '../hooks/useDebounce'; // Import useDebounce
 
 const MonthlyJobsPage = () => {
   const { showNotification } = useNotification();
@@ -29,15 +30,18 @@ const MonthlyJobsPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State for delete modal
   const [selectedJobForDelete, setSelectedJobForDelete] = useState(null); // State for job to delete
 
+  const debouncedFilters = useDebounce(filters, 500); // Debounce filters with a 500ms delay
+
   const fetchJobs = async () => {
     setLoading(true);
+    console.log('Fetching jobs with filters:', debouncedFilters); // Add this line
     try {
-      const data = await getMonthlyJobs(filters, pagination); 
+      const data = await getMonthlyJobs(debouncedFilters, pagination); 
       setJobs(data || []);
       setPagination(prev => ({ ...prev, total: data.length || 0 }));
     } catch (err) {
-      setError(err.message || 'Failed to fetch monthly jobs.');
-      showNotification(`Error: ${err.message || 'Failed to fetch monthly jobs.'}`, 'error');
+      setError(err.message || 'Gagal memuat pekerjaan bulanan.');
+      showNotification(`Error: ${err.message || 'Gagal memuat pekerjaan bulanan.'}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -45,7 +49,7 @@ const MonthlyJobsPage = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [filters, pagination.page, pagination.limit]);
+  }, [debouncedFilters, pagination.page, pagination.limit]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -235,7 +239,7 @@ const MonthlyJobsPage = () => {
                       onClick={() => openUpdateStatusModal(job)}
                       className="text-green-600 hover:text-green-900 mr-3"
                     >
-                      Update Status
+                      Perbarui Status
                     </button>
                     <button
                       onClick={() => openDeleteModal(job)}

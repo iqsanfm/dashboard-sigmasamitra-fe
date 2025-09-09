@@ -72,7 +72,7 @@ export const getMonthlyJobs = (filters = {}, pagination = {}) => {
     }
   });
 
-  console.log(apiFetch('monthly-jobs/', { params }));
+  
   
 
   return apiFetch('monthly-jobs/', { params });
@@ -102,4 +102,29 @@ export const deleteJob = (jobType, jobId) => {
   return apiFetch(`${formattedJobType}/${jobId}`, {
     method: 'DELETE',
   });
+};
+
+export const createMonthlyTaxReport = (jobId, reportData) => {
+  return apiFetch(`monthly-jobs/${jobId}/tax-reports/`, {
+    method: 'POST',
+    body: JSON.stringify(reportData),
+  });
+};
+
+export const updateMonthlyTaxReport = (jobId, reportId, reportData) => {
+  return apiFetch(`monthly-jobs/${jobId}/tax-reports/${reportId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(reportData),
+  });
+};
+
+export const deleteMonthlyTaxReport = (jobId, reportId) => {
+  return apiFetch(`monthly-jobs/${jobId}/tax-reports/${reportId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const getJobFiles = (jobType, jobId) => {
+  const formattedJobType = `${jobType.toLowerCase().replace(/\s+/g, '-')}-jobs`;
+  return apiFetch(`${formattedJobType}/${jobId}/files`);
 };

@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage';
 import StaffsPage from './pages/StaffsPage'; // Import StaffsPage
 import ClientsPage from './pages/ClientsPage'; // Import ClientsPage
 import DashboardLayout from './components/DashboardLayout'; // Import DashboardLayout
+import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
 import { decodeJwt } from './utils/auth';
 import { NotificationProvider } from './contexts/NotificationContext';
 import Toast from './components/Toast';
@@ -144,18 +145,7 @@ function App() {
             element={
               isLoggedIn ? (
                 fullUserInfo ? (
-                  <DashboardLayout userInfo={fullUserInfo} onLogout={handleLogout}>
-                    <Routes>
-                      <Route index element={<DashboardPage userInfo={fullUserInfo} />} />
-                      <Route path="staffs" element={<StaffsPage />} />
-                      <Route path="clients" element={<ClientsPage />} />
-                      <Route path="jobs/monthly" element={<MonthlyJobsPage />} /> {/* New Route */}
-                      <Route path="create-job" element={<CreateJobPage />} /> {/* New Route */}
-                      <Route path="jobs/:job_type/:job_id" element={<JobDetailPage />} /> {/* New Route */}
-                      <Route path="jobs/:job_type/:job_id/edit" element={<EditJobPage />} /> {/* New Route for EditJobPage */}
-                      {/* Add other dashboard routes here */}
-                    </Routes>
-                  </DashboardLayout>
+                  <DashboardLayout userInfo={fullUserInfo} onLogout={handleLogout} />
                 ) : (
                   <div>Loading Dashboard...</div>
                 )

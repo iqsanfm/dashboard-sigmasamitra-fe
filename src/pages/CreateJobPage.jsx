@@ -9,7 +9,7 @@ const CreateJobPage = () => {
 
   const [formData, setFormData] = useState({
     client_id: '',
-    job_type: '', // e.g., Monthly, Annual, Dividend, SP2DK, Pemeriksaan, Project
+    job_type: 'Monthly', // Set default to Monthly
     job_year: new Date().getFullYear(),
     job_month: '', // For MonthlyJob
     assigned_pic_staff_sigma_id: '',
@@ -33,8 +33,8 @@ const CreateJobPage = () => {
         const staffsData = await getStaffs();
         setStaffs(staffsData);
       } catch (err) {
-        setError(err.message || 'Failed to fetch initial data.');
-        showNotification('Error fetching initial data', 'error');
+        setError(err.message || 'Gagal memuat data awal.');
+        showNotification('Error memuat data awal', 'error');
       } finally {
         setLoading(false);
       }
@@ -74,13 +74,17 @@ const CreateJobPage = () => {
     }));
   };
 
+  const handleCancel = () => {
+    navigate(-1); // Go back to the previous page
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       // Basic validation
-      if (!formData.client_id || !formData.job_type || !formData.assigned_pic_staff_sigma_id) {
-        showNotification('Client, Job Type, and PIC are required.', 'error');
+      if (!formData.client_id || !formData.assigned_pic_staff_sigma_id) {
+        showNotification('Client and PIC are required.', 'error');
         setLoading(false);
         return;
       }
@@ -104,25 +108,25 @@ const CreateJobPage = () => {
 
       // Example: if job_type is Monthly, ensure job_month is present
       if (formData.job_type === 'Monthly' && !payload.job_month) { // Use payload.job_month after conversion
-        showNotification('Job Month is required for Monthly jobs.', 'error');
+        showNotification('Bulan Pekerjaan wajib diisi untuk pekerjaan Bulanan.', 'error');
         setLoading(false);
         return;
       }
 
       // API call
       await createJob(payload.job_type, payload);
-      showNotification('Job created successfully!', 'success');
+      showNotification('Pekerjaan berhasil dibuat!', 'success');
       navigate('/dashboard/admin-home'); // Redirect to dashboard or job list
     } catch (err) {
-      setError(err.message || 'Failed to create job.');
-      showNotification(`Error: ${err.message || 'Failed to create job.'}`, 'error');
+      setError(err.message || 'Gagal membuat pekerjaan.');
+      showNotification(`Error: ${err.message || 'Gagal membuat pekerjaan.'}`, 'error');
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <div className="p-4 text-center">Loading form data...</div>;
+    return <div className="p-4 text-center">Memuat data formulir...</div>;
   }
 
   if (error) {
@@ -131,11 +135,11 @@ const CreateJobPage = () => {
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Create New Job</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Buat Pekerjaan Baru</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Client Selection */}
         <div>
-          <label htmlFor="client_id" className="block text-sm font-medium text-gray-700 mb-1">Client</label>
+          <label htmlFor="client_id" className="block text-sm font-medium text-gray-700 mb-1">Klien</label>
           <select
             id="client_id"
             name="client_id"
@@ -144,7 +148,7 @@ const CreateJobPage = () => {
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             required
           >
-            <option value="">Select a client</option>
+            <option value="">Pilih klien</option>
             {clients.map((client) => (
               <option key={client.client_id} value={client.client_id}>
                 {client.client_name}
@@ -153,31 +157,11 @@ const CreateJobPage = () => {
           </select>
         </div>
 
-        {/* Job Type Selection */}
-        <div>
-          <label htmlFor="job_type" className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
-          <select
-            id="job_type"
-            name="job_type"
-            value={formData.job_type}
-            onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            required
-          >
-            <option value="">Select job type</option>
-            {/* These should ideally come from an API or config */}
-            <option value="Monthly">Monthly</option>
-            <option value="Annual">Annual</option>
-            <option value="Dividend">Dividend</option>
-            <option value="SP2DK">SP2DK</option>
-            <option value="Pemeriksaan">Pemeriksaan</option>
-            <option value="Project">Project</option>
-          </select>
-        </div>
+        
 
         {/* Job Year */}
         <div>
-          <label htmlFor="job_year" className="block text-sm font-medium text-gray-700 mb-1">Job Year</label>
+          <label htmlFor="job_year" className="block text-sm font-medium text-gray-700 mb-1">Tahun Pekerjaan</label>
           <input
             type="number"
             id="job_year"
@@ -209,7 +193,7 @@ const CreateJobPage = () => {
 
         {/* Assigned PIC Staff Selection */}
         <div>
-          <label htmlFor="assigned_pic_staff_sigma_id" className="block text-sm font-medium text-gray-700 mb-1">Assigned PIC Staff</label>
+          <label htmlFor="assigned_pic_staff_sigma_id" className="block text-sm font-medium text-gray-700 mb-1">Staf PIC yang Ditugaskan</label>
           <select
             id="assigned_pic_staff_sigma_id"
             name="assigned_pic_staff_sigma_id"
@@ -218,7 +202,7 @@ const CreateJobPage = () => {
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             required
           >
-            <option value="">Select PIC Staff</option>
+            <option value="">Pilih Staf PIC</option>
             {staffs.map((staff) => (
               <option key={staff.staff_id} value={staff.staff_id}>
                 {staff.nama} ({staff.role})
@@ -229,7 +213,7 @@ const CreateJobPage = () => {
 
         {/* Overall Status */}
         <div>
-          <label htmlFor="overall_status" className="block text-sm font-medium text-gray-700 mb-1">Overall Status</label>
+          <label htmlFor="overall_status" className="block text-sm font-medium text-gray-700 mb-1">Status Keseluruhan</label>
           <select
             id="overall_status"
             name="overall_status"
@@ -246,7 +230,7 @@ const CreateJobPage = () => {
 
         {/* Correction Status */}
         <div>
-          <label htmlFor="correction_status" className="block text-sm font-medium text-gray-700 mb-1">Correction Status</label>
+          <label htmlFor="correction_status" className="block text-sm font-medium text-gray-700 mb-1">Status Koreksi</label>
           <select
             id="correction_status"
             name="correction_status"
@@ -265,7 +249,7 @@ const CreateJobPage = () => {
         {/* Reports/Tax Reports Section (Conditional based on job type) */}
         {['Monthly', 'Annual', 'Dividend'].includes(formData.job_type) && (
           <div className="border border-gray-200 p-4 rounded-md shadow-sm">
-            <h3 className="text-lg font-bold mb-2 text-gray-800">Reports</h3>
+            <h3 className="text-lg font-bold mb-2 text-gray-800">Laporan</h3>
             {formData.reports.map((report, index) => (
               <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 border border-gray-200 rounded-md bg-gray-50 relative">
                 <button
@@ -278,7 +262,7 @@ const CreateJobPage = () => {
                   </svg>
                 </button>
                 <div>
-                  <label htmlFor={`tax_type-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Tax Type</label>
+                  <label htmlFor={`tax_type-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Jenis Pajak</label>
                   <input
                     type="text"
                     id={`tax_type-${index}`}
@@ -289,7 +273,7 @@ const CreateJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor={`billing_code-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Billing Code</label>
+                  <label htmlFor={`billing_code-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Kode Penagihan</label>
                   <input
                     type="text"
                     id={`billing_code-${index}`}
@@ -300,7 +284,7 @@ const CreateJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor={`payment_date-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Payment Date</label>
+                  <label htmlFor={`payment_date-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Tanggal Pembayaran</label>
                   <input
                     type="date"
                     id={`payment_date-${index}`}
@@ -311,7 +295,7 @@ const CreateJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor={`payment_amount-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Payment Amount</label>
+                  <label htmlFor={`payment_amount-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Jumlah Pembayaran</label>
                   <input
                     type="number"
                     id={`payment_amount-${index}`}
@@ -322,7 +306,7 @@ const CreateJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor={`report_status-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Report Status</label>
+                  <label htmlFor={`report_status-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Status Laporan</label>
                   <input
                     type="text"
                     id={`report_status-${index}`}
@@ -333,7 +317,7 @@ const CreateJobPage = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor={`report_date-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Report Date</label>
+                  <label htmlFor={`report_date-${index}`} className="block text-sm font-medium text-gray-700 mb-1">Tanggal Laporan</label>
                   <input
                     type="date"
                     id={`report_date-${index}`}
@@ -346,19 +330,28 @@ const CreateJobPage = () => {
               </div>
             ))}
             <button type="button" onClick={addReport} className="mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-              Add Report
+              Tambah Laporan
             </button>
           </div>
         )}
 
         {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          disabled={loading}
-        >
-          {loading ? 'Creating Job...' : 'Create Job'}
-        </button>
+        <div className="flex justify-end space-x-4 mt-4"> {/* Added container div */}
+          <button
+            type="button" // Change type to button for cancel
+            onClick={handleCancel}
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            disabled={loading}
+          >
+            {loading ? 'Membuat Pekerjaan...' : 'Buat Pekerjaan'}
+          </button>
+        </div>
       </form>
     </div>
   );
