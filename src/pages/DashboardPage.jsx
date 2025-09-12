@@ -45,20 +45,16 @@ const DashboardPage = ({ userInfo }) => {
   };
 
   useEffect(() => {
-    console.log('DashboardPage: useEffect triggered.');
     const fetchSummaryData = async () => {
-      console.log('DashboardPage: fetchSummaryData started.');
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
       const token = localStorage.getItem('jwtToken');
 
       if (!token) {
-        console.log('DashboardPage: Token not found.');
         setError('Authentication token not found.');
         setLoading(false);
         return;
       }
 
-      console.log('DashboardPage: Token found. Attempting to fetch jobs from:', `${API_BASE_URL}/dashboard/jobs`);
       try {
         const response = await fetch(`${API_BASE_URL}/dashboard/jobs`, {
           headers: {
@@ -79,7 +75,6 @@ const DashboardPage = ({ userInfo }) => {
         console.error('DashboardPage: Network error or unexpected issue:', err);
         setError('Network error or unexpected issue while fetching jobs.');
       } finally {
-        console.log('DashboardPage: fetchJobsData finished. Loading set to false.');
         setLoading(false);
       }
     };

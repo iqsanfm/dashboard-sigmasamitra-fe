@@ -15,7 +15,7 @@ const StaffsPage = () => {
   const [currentEditName, setCurrentEditName] = useState('');
   const [currentEditEmail, setCurrentEditEmail] = useState('');
   const [currentEditRole, setCurrentEditRole] = useState('');
-  const [editMessage, setEditMessage] = useState(null);
+  
   const [showEditModal, setShowEditModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');

@@ -9,6 +9,7 @@ const ClientsPage = ({ userInfo }) => {
   const [error, setError] = useState(null);
   const [showAddClientForm, setShowAddClientForm] = useState(false);
   
+  
   // State for the new comprehensive client form
   const [newClient, setNewClient] = useState({
     client_name: '',
@@ -129,17 +130,17 @@ const ClientsPage = ({ userInfo }) => {
   // Handle adding a new client
   const handleAddClient = async (e) => {
     e.preventDefault();
-    setAddClientMessage(null);
+    showNotification(null);
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const token = localStorage.getItem('jwtToken');
 
     if (!token) {
-      setAddClientMessage({ type: 'error', text: 'Authentication token not found.' });
+      showNotification('Authentication token not found.', 'error');
       return;
     }
     if (userInfo?.role !== 'ADMIN') {
-      setAddClientMessage({ type: 'error', text: 'You do not have permission to add clients.' });
+      showNotification('You do not have permission to add clients.', 'error');
       return;
     }
 
@@ -154,7 +155,7 @@ const ClientsPage = ({ userInfo }) => {
       });
 
       if (response.ok) {
-        setAddClientMessage({ type: 'success', text: 'Client added successfully!' });
+        showNotification('Client added successfully!', 'success');
         setShowAddClientForm(false);
         fetchClients(); // Re-fetch client list
         // Reset form
@@ -169,10 +170,10 @@ const ClientsPage = ({ userInfo }) => {
         });
       } else {
         const errorData = await response.json();
-        setAddClientMessage({ type: 'error', text: errorData.error || 'Failed to add client.' });
+        showNotification(errorData.error || 'Failed to add client.', 'error');
       }
     } catch (err) {
-      setAddClientMessage({ type: 'error', text: 'Network error or unexpected issue while adding client.' });
+      showNotification('Network error or unexpected issue while adding client.', 'error');
       console.error('Add client error:', err);
     }
   };
@@ -182,12 +183,12 @@ const ClientsPage = ({ userInfo }) => {
   const handleDeleteClient = async (clientId) => {
     if (!window.confirm('Are you sure you want to delete this client?')) return;
     
-    setDeleteMessage(null);
+    showNotification(null);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const token = localStorage.getItem('jwtToken');
 
     if (!token) {
-      setDeleteMessage({ type: 'error', text: 'Authentication token not found.' });
+      showNotification('Authentication token not found.', 'error');
       return;
     }
 
@@ -198,14 +199,14 @@ const ClientsPage = ({ userInfo }) => {
       });
 
       if (response.ok) {
-        setDeleteMessage({ type: 'success', text: 'Client deleted successfully!' });
+        showNotification('Client deleted successfully!', 'success');
         fetchClients();
       } else {
         const errorData = await response.json();
-        setDeleteMessage({ type: 'error', text: errorData.error || 'Failed to delete client.' });
+        showNotification(errorData.error || 'Failed to delete client.', 'error');
       }
     } catch (err) {
-      setDeleteMessage({ type: 'error', text: 'Network error or unexpected issue while deleting client.' });
+      showNotification('Network error or unexpected issue while deleting client.', 'error');
       console.error('Delete client error:', err);
     }
   };
@@ -214,7 +215,7 @@ const ClientsPage = ({ userInfo }) => {
   const handleEditClick = (client) => {
     setEditingClientId(client.client_id);
     setCurrentEditClient({ ...client });
-    setEditMessage(null);
+    showNotification(null);
   };
 
   // Handle detail click
@@ -232,7 +233,7 @@ const ClientsPage = ({ userInfo }) => {
   // Handle cancel edit
   const handleCancelEdit = () => {
     setEditingClientId(null);
-    setEditMessage(null);
+    showNotification(null);
   };
 
   // Handle updating a client

@@ -4,10 +4,24 @@ import { Link, Outlet, Routes, Route, useNavigate, Navigate, useLocation } from 
 import DashboardPage from '../pages/DashboardPage';
 import StaffsPage from '../pages/StaffsPage';
 import ClientsPage from '../pages/ClientsPage';
-import JobDetailPage from '../pages/JobDetailPage';
-import CreateJobPage from '../pages/CreateJobPage';
-import MonthlyJobsPage from '../pages/MonthlyJobsPage';
-import EditJobPage from '../pages/EditJobPage'; // Import EditJobPage
+
+import MonthlyJobsPage from '../pages/monthly/MonthlyJobsPage';
+import MonthlyJobDetailPage from '../pages/monthly/MonthlyJobDetailPage';
+import EditMonthlyJobPage from '../pages/monthly/EditMonthlyJobPage';
+import CreateMonthlyJobPage from '../pages/monthly/CreateMonthlyJobPage';
+import CreateMonthlyCorrectionJobPage from '../pages/monthly/CreateMonthlyCorrectionJobPage';
+
+import AnnualJobsPage from '../pages/annual/AnnualJobsPage';
+import CreateAnnualJobPage from '../pages/annual/CreateAnnualJobPage';
+import AnnualJobDetailPage from '../pages/annual/AnnualJobDetailPage';
+import EditAnnualJobPage from '../pages/annual/EditAnnualJobPage';
+import CreateAnnualCorrectionJobPage from '../pages/annual/CreateAnnualCorrectionJobPage';
+
+import Sp2dkJobsPage from '../pages/sp2dk/Sp2dkJobsPage';
+import CreateSp2dkJobPage from '../pages/sp2dk/CreateSp2dkJobPage';
+import Sp2dkJobDetailPage from '../pages/sp2dk/Sp2dkJobDetailPage';
+import EditSp2dkJobPage from '../pages/sp2dk/EditSp2dkJobPage';
+import CreateSp2dkCorrectionJobPage from '../pages/sp2dk/CreateSp2dkCorrectionJobPage';
 
 const DashboardLayout = ({ userInfo, onLogout }) => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -77,6 +91,12 @@ const DashboardLayout = ({ userInfo, onLogout }) => {
                 <Link to="/dashboard/jobs/monthly" className={`block py-3 rounded hover:bg-gray-700 flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
                   {isSidebarExpanded ? 'Pekerjaan Bulanan' : 'PB'}
                 </Link>
+                <Link to="/dashboard/jobs/annual" className={`block py-3 rounded hover:bg-gray-700 flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
+                  {isSidebarExpanded ? 'Pekerjaan Tahunan' : 'PT'}
+                </Link>
+                <Link to="/dashboard/jobs/sp2dk" className={`block py-3 rounded hover:bg-gray-700 flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
+                  {isSidebarExpanded ? 'Pekerjaan SP2DK' : 'SP2DK'}
+                </Link>
                 {/* Add other job types here */}
               </div>
             </>
@@ -108,10 +128,25 @@ const DashboardLayout = ({ userInfo, onLogout }) => {
             <Route path="admin-home" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><DashboardPage userInfo={userInfo} onLogout={onLogout} /></ProtectedRoute>} />
             <Route path="staffs" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><StaffsPage /></ProtectedRoute>} />
             <Route path="clients" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><ClientsPage userInfo={userInfo} /></ProtectedRoute>} />
+            
             <Route path="jobs/monthly" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><MonthlyJobsPage /></ProtectedRoute>} />
-            <Route path="create-job" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateJobPage /></ProtectedRoute>} />
-            <Route path="jobs/:job_type/:job_id" element={<ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'KEUANGAN']} userInfo={userInfo}><JobDetailPage /></ProtectedRoute>} />
-            <Route path="jobs/:job_type/:job_id/edit" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><EditJobPage /></ProtectedRoute>} />
+            <Route path="jobs/monthly/:job_id" element={<ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'KEUANGAN']} userInfo={userInfo}><MonthlyJobDetailPage /></ProtectedRoute>} />
+            <Route path="jobs/monthly/:job_id/edit" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><EditMonthlyJobPage /></ProtectedRoute>} />
+            <Route path="create-job/monthly" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateMonthlyJobPage /></ProtectedRoute>} />
+            <Route path="create-correction/monthly/:original_job_id" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateMonthlyCorrectionJobPage /></ProtectedRoute>} />
+
+            <Route path="jobs/annual" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><AnnualJobsPage /></ProtectedRoute>} />
+            <Route path="jobs/annual/:job_id" element={<ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'KEUANGAN']} userInfo={userInfo}><AnnualJobDetailPage /></ProtectedRoute>} />
+            <Route path="jobs/annual/:job_id/edit" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><EditAnnualJobPage /></ProtectedRoute>} />
+            <Route path="create-job/annual" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateAnnualJobPage /></ProtectedRoute>} />
+            <Route path="create-correction/annual/:original_job_id" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateAnnualCorrectionJobPage /></ProtectedRoute>} />
+
+            <Route path="jobs/sp2dk" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><Sp2dkJobsPage /></ProtectedRoute>} />
+            <Route path="jobs/sp2dk/:job_id" element={<ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'KEUANGAN']} userInfo={userInfo}><Sp2dkJobDetailPage /></ProtectedRoute>} />
+            <Route path="jobs/sp2dk/:job_id/edit" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><EditSp2dkJobPage /></ProtectedRoute>} />
+            <Route path="create-job/sp2dk" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateSp2dkJobPage /></ProtectedRoute>} />
+            <Route path="create-correction/sp2dk/:original_job_id" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateSp2dkCorrectionJobPage /></ProtectedRoute>} />
+
             {/* Redirect root /dashboard to the appropriate home based on role */}
             <Route
               path="/"

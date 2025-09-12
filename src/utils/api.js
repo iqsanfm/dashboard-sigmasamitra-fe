@@ -78,6 +78,38 @@ export const getMonthlyJobs = (filters = {}, pagination = {}) => {
   return apiFetch('monthly-jobs/', { params });
 };
 
+export const getAnnualJobs = (filters = {}, pagination = {}) => {
+  const params = {
+    ...filters,
+    page: pagination.page,
+    limit: pagination.limit,
+  };
+  // Remove undefined or null values from params
+  Object.keys(params).forEach(key => {
+    if (params[key] === undefined || params[key] === null || params[key] === '') {
+      delete params[key];
+    }
+  });
+
+  return apiFetch('annual-jobs/', { params });
+};
+
+export const getSp2dkJobs = (filters = {}, pagination = {}) => {
+  const params = {
+    ...filters,
+    page: pagination.page,
+    limit: pagination.limit,
+  };
+  // Remove undefined or null values from params
+  Object.keys(params).forEach(key => {
+    if (params[key] === undefined || params[key] === null || params[key] === '') {
+      delete params[key];
+    }
+  });
+
+  return apiFetch('sp2dk-jobs/', { params });
+};
+
 // New function to update a job
 export const updateJob = (jobType, jobId, jobData) => {
   const formattedJobType = `${jobType.toLowerCase().replace(/\s+/g, '-')}-jobs`;
@@ -104,22 +136,25 @@ export const deleteJob = (jobType, jobId) => {
   });
 };
 
-export const createMonthlyTaxReport = (jobId, reportData) => {
-  return apiFetch(`monthly-jobs/${jobId}/tax-reports/`, {
+export const createTaxReport = (jobType, jobId, reportData) => {
+  const formattedJobType = `${jobType.toLowerCase().replace(/\s+/g, '-')}-jobs`;
+  return apiFetch(`${formattedJobType}/${jobId}/tax-reports/`, {
     method: 'POST',
     body: JSON.stringify(reportData),
   });
 };
 
-export const updateMonthlyTaxReport = (jobId, reportId, reportData) => {
-  return apiFetch(`monthly-jobs/${jobId}/tax-reports/${reportId}`, {
+export const updateTaxReport = (jobType, jobId, reportId, reportData) => {
+  const formattedJobType = `${jobType.toLowerCase().replace(/\s+/g, '-')}-jobs`;
+  return apiFetch(`${formattedJobType}/${jobId}/tax-reports/${reportId}`, {
     method: 'PATCH',
     body: JSON.stringify(reportData),
   });
 };
 
-export const deleteMonthlyTaxReport = (jobId, reportId) => {
-  return apiFetch(`monthly-jobs/${jobId}/tax-reports/${reportId}`, {
+export const deleteTaxReport = (jobType, jobId, reportId) => {
+  const formattedJobType = `${jobType.toLowerCase().replace(/\s+/g, '-')}-jobs`;
+  return apiFetch(`${formattedJobType}/${jobId}/tax-reports/${reportId}`, {
     method: 'DELETE',
   });
 };

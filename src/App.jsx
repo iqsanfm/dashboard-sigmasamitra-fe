@@ -9,10 +9,9 @@ import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRou
 import { decodeJwt } from './utils/auth';
 import { NotificationProvider } from './contexts/NotificationContext';
 import Toast from './components/Toast';
-import MonthlyJobsPage from './pages/MonthlyJobsPage'; // Import MonthlyJobsPage
-import CreateJobPage from './pages/CreateJobPage'; // Import CreateJobPage
-import JobDetailPage from './pages/JobDetailPage'; // Import JobDetailPage
-import EditJobPage from './pages/EditJobPage'; // Import EditJobPage
+import MonthlyJobsPage from './pages/monthly/MonthlyJobsPage'; // Import MonthlyJobsPage
+import Sp2dkJobPage from './pages/sp2dk/Sp2dkJobsPage';
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

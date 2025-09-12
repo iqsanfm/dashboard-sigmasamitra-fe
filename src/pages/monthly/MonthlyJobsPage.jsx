@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useNotification } from '../contexts/NotificationContext';
-import { getMonthlyJobs, deleteJob } from '../utils/api'; // Import deleteJob
-import UpdateJobStatusModal from '../components/UpdateJobStatusModal';
-import ConfirmationModal from '../components/ConfirmationModal'; // Import ConfirmationModal
-import useDebounce from '../hooks/useDebounce'; // Import useDebounce
+import { useNotification } from '../../contexts/NotificationContext';
+import { getMonthlyJobs, deleteJob } from '../../utils/api'; // Import deleteJob
+import UpdateJobStatusModal from '../../components/UpdateJobStatusModal';
+import ConfirmationModal from '../../components/ConfirmationModal'; // Import ConfirmationModal
+import useDebounce from '../../hooks/useDebounce'; // Import useDebounce
 
 const MonthlyJobsPage = () => {
   const { showNotification } = useNotification();
@@ -32,11 +32,10 @@ const MonthlyJobsPage = () => {
 
   const debouncedFilters = useDebounce(filters, 500); // Debounce filters with a 500ms delay
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     setLoading(true);
-    console.log('Fetching jobs with filters:', debouncedFilters); // Add this line
     try {
-      const data = await getMonthlyJobs(debouncedFilters, pagination); 
+      const data = await getMonthlyJobs(debouncedFilters, { page: pagination.page, limit: pagination.limit }); 
       setJobs(data || []);
       setPagination(prev => ({ ...prev, total: data.length || 0 }));
     } catch (err) {
@@ -45,11 +44,11 @@ const MonthlyJobsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedFilters, pagination.page, pagination.limit, showNotification]);
 
   useEffect(() => {
     fetchJobs();
-  }, [debouncedFilters, pagination.page, pagination.limit]);
+  }, [debouncedFilters, pagination.page, pagination.limit, fetchJobs]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -112,7 +111,7 @@ const MonthlyJobsPage = () => {
 
       <div className="flex justify-between items-center mb-4">
         <Link 
-          to="/dashboard/create-job"
+          to="/dashboard/create-job/monthly"
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md"
         >
           Tambah Pekerjaan Bulanan
@@ -194,59 +193,76 @@ const MonthlyJobsPage = () => {
           <table className="min-w-full leading-normal">
             <thead>
               <tr>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r">Klien</th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r">Periode</th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r">PIC</th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r">Status</th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r">Terakhir Diperbarui</th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Klien</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Bulan</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Status</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Status Koreksi</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">PIC</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Terakhir Diperbarui</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {jobs.map((job) => (
                 <tr key={job.job_id}>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r">{job.client_name}</td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r">
-                    {new Date(0, job.job_month - 1).toLocaleString('id-ID', { month: 'short' })} {job.job_year}
-                  </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r">{job.assigned_pic_staff_sigma_name}</td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${job.overall_status === 'Selesai' ? 'bg-green-100 text-green-800' : 
-                        job.overall_status === 'Dalam Pengerjaan' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-gray-100 text-gray-800'}`
-                    }>
+                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.client_name}</td>
+                
+                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.job_month || '-'}</td>
+                
+              
+                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">
+                    <span className={`py-1 px-2 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-full
+                      ${job.overall_status === 'Selesai' ? 'bg-green-100 text-green-800' :
+                        job.overall_status === 'Dalam Pengerjaan' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'}`}
+                    >
                       {job.overall_status}
                     </span>
                   </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r">
-                    {new Date(job.updated_at).toLocaleDateString()}
+                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.correction_status || '-'}</td>
+                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.assigned_pic_staff_sigma_name}</td>
+                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">
+                    {job.updated_at ? new Date(job.updated_at).toLocaleDateString() : '-'}
                   </td>
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                    <Link 
-                      to={`/dashboard/jobs/monthly/${job.job_id}`} // Link to JobDetailPage
-                      className="text-indigo-600 hover:text-indigo-900 mr-3"
-                    >
-                      Detail
-                    </Link>
-                    <Link
-                      to={`/dashboard/jobs/monthly/${job.job_id}/edit`} // Link to EditJobPage
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => openUpdateStatusModal(job)}
-                      className="text-green-600 hover:text-green-900 mr-3"
-                    >
-                      Perbarui Status
-                    </button>
-                    <button
-                      onClick={() => openDeleteModal(job)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Hapus
-                    </button>
+                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                    <div className="flex flex-wrap gap-2">
+                      <Link 
+                        to={`/dashboard/jobs/monthly/${job.job_id}`} // Link to JobDetailPage
+                        className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 py-1 px-2 rounded-md inline-flex items-center justify-center"
+                        title="Detail"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                      </Link>
+                      <Link
+                        to={`/dashboard/jobs/monthly/${job.job_id}/edit`} // Link to EditJobPage
+                        className="bg-blue-100 text-blue-700 hover:bg-blue-200 py-1 px-2 rounded-md inline-flex items-center justify-center"
+                        title="Edit"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14.25v4.5a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18.75v-10.5A2.25 2.25 0 015.25 6H10.5" />
+                        </svg>
+                      </Link>
+                      <button
+                        onClick={() => openUpdateStatusModal(job)}
+                        className="bg-green-100 text-green-700 hover:bg-green-200 py-1 px-2 rounded-md inline-flex items-center justify-center"
+                        title="Perbarui Status"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.181m0 0l-3.181 3.181m0-4.992v4.992m0 0h4.992" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => openDeleteModal(job)}
+                        className="bg-red-100 text-red-700 hover:bg-red-200 py-1 px-2 rounded-md inline-flex items-center justify-center"
+                        title="Hapus"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.927a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.147-2.009-2.201L8.037 2.009A2.175 2.175 0 005.82 4.147v.916m7.5 0h-3" />
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
