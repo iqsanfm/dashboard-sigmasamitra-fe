@@ -23,6 +23,12 @@ import Sp2dkJobDetailPage from '../pages/sp2dk/Sp2dkJobDetailPage';
 import EditSp2dkJobPage from '../pages/sp2dk/EditSp2dkJobPage';
 import CreateSp2dkCorrectionJobPage from '../pages/sp2dk/CreateSp2dkCorrectionJobPage';
 
+import DividendJobsPage from '../pages/dividend/DividendJobsPage';
+import CreateDividendJobPage from '../pages/dividend/CreateDividendJobPage';
+import DividendJobDetailPage from '../pages/dividend/DividendJobDetailPage';
+import EditDividendJobPage from '../pages/dividend/EditDividendJobPage';
+import CreateDividendCorrectionJobPage from '../pages/dividend/CreateDividendCorrectionJobPage';
+
 const DashboardLayout = ({ userInfo, onLogout }) => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const navigate = useNavigate();
@@ -97,6 +103,9 @@ const DashboardLayout = ({ userInfo, onLogout }) => {
                 <Link to="/dashboard/jobs/sp2dk" className={`block py-3 rounded hover:bg-gray-700 flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
                   {isSidebarExpanded ? 'Pekerjaan SP2DK' : 'SP2DK'}
                 </Link>
+                <Link to="/dashboard/jobs/dividend" className={`block py-3 rounded hover:bg-gray-700 flex items-center ${isSidebarExpanded ? 'px-4 justify-start' : 'px-2 justify-center'}`}>
+                  {isSidebarExpanded ? 'Pekerjaan Dividend' : 'PD'}
+                </Link>
                 {/* Add other job types here */}
               </div>
             </>
@@ -146,6 +155,12 @@ const DashboardLayout = ({ userInfo, onLogout }) => {
             <Route path="jobs/sp2dk/:job_id/edit" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><EditSp2dkJobPage /></ProtectedRoute>} />
             <Route path="create-job/sp2dk" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateSp2dkJobPage /></ProtectedRoute>} />
             <Route path="create-correction/sp2dk/:original_job_id" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateSp2dkCorrectionJobPage /></ProtectedRoute>} />
+
+            <Route path="jobs/dividend" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><DividendJobsPage /></ProtectedRoute>} />
+            <Route path="jobs/dividend/:job_id" element={<ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'KEUANGAN']} userInfo={userInfo}><DividendJobDetailPage /></ProtectedRoute>} />
+            <Route path="jobs/dividend/:job_id/edit" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><EditDividendJobPage /></ProtectedRoute>} />
+            <Route path="create-job/dividend" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateDividendJobPage /></ProtectedRoute>} />
+            <Route path="create-correction/dividend/:original_job_id" element={<ProtectedRoute allowedRoles={['ADMIN']} userInfo={userInfo}><CreateDividendCorrectionJobPage /></ProtectedRoute>} />
 
             {/* Redirect root /dashboard to the appropriate home based on role */}
             <Route

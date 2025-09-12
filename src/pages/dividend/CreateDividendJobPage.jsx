@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../../contexts/NotificationContext';
-import { createJob, getClients, getJobDetails, getStaffs } from '../../utils/api';
+import { createJob, getClients, getStaffs } from '../../utils/api';
 
-const CreateMonthlyCorrectionJobPage = () => {
+const CreateDividendJobPage = () => {
   const navigate = useNavigate();
   const { showNotification } = useNotification();
-  const { original_job_id } = useParams();
-  const originalJobType = 'monthly';
 
   const [formData, setFormData] = useState({
     client_id: '',
+    job_year: new Date().getFullYear(),
     assigned_pic_staff_sigma_id: '',
-    job_year: '',
-    job_month: '',
     overall_status: 'pending',
-    correction_status: '',
-    original_job_id: original_job_id
+    correction_status: 'NORMAL',
+    job_type: 'NORMAL',
+    reports: [
+      {
+        is_reported: false,
+        report_date: '',
+        report_status: 'pending',
+      },
+    ],
   });
 
   const [clients, setClients] = useState([]);
@@ -37,31 +41,25 @@ const CreateMonthlyCorrectionJobPage = () => {
       } finally {
         setLoading(false);
       }
-
-      if (!original_job_id) {
-        setError('Original job ID is missing. Cannot load correction job details.');
-        setLoading(false);
-        return;
-      }
-      const originalJobData = await getJobDetails(originalJobType, original_job_id);
-
-      setFormData(prevData => ({
-        ...prevData,
-        client_id: originalJobData.client_id || '',
-        assigned_pic_staff_sigma_id: originalJobData.assigned_pic_staff_sigma_id || '',
-        job_year: originalJobData.job_year || '',
-        job_month: originalJobData.job_month || '',
-        overall_status: originalJobData.overall_status || 'pending',
-      }));
     };
     fetchData();
-  }, [originalJobType, original_job_id, showNotification]);
+  }, [showNotification]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+    }));
+  };
+
+  const handleReportChange = (e, index) => {
+    const { name, value, type, checked } = e.target;
+    const newReports = [...formData.reports];
+    newReports[index][name] = type === 'checkbox' ? checked : value;
+    setFormData((prevData) => ({
+      ...prevData,
+      reports: newReports,
     }));
   };
 
@@ -81,19 +79,15 @@ const CreateMonthlyCorrectionJobPage = () => {
 
       const payload = {
         ...formData,
-        job_year: parseInt(formData.job_year, 10),
-        job_month: parseInt(formData.job_month, 10),
-        job_type: "CORRECTION",
-        correction_type: formData.correction_status,
+        job_year: parseInt(formData.job_year),
       };
-      delete payload.correction_status;
 
-      await createJob('monthly', payload);
-      showNotification('Pekerjaan pembetulan berhasil dibuat!', 'success');
-      navigate('/dashboard/jobs/monthly');
+      await createJob('dividend', payload);
+      showNotification('Pekerjaan dividend berhasil dibuat!', 'success');
+      navigate('/dashboard/jobs/dividend');
     } catch (err) {
-      setError(err.message || 'Gagal membuat pekerjaan pembetulan.');
-      showNotification(`Error: ${err.message || 'Gagal membuat pekerjaan pembetulan bulanan.'}`, 'error');
+      setError(err.message || 'Gagal membuat pekerjaan.');
+      showNotification(`Error: ${err.message || 'Gagal membuat pekerjaan.'}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -109,7 +103,7 @@ const CreateMonthlyCorrectionJobPage = () => {
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Buat Pekerjaan Pembetulan Bulanan Baru</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Buat Pekerjaan Dividend Baru</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="client_id" className="block text-sm font-medium text-gray-700 mb-1">Klien</label>
@@ -131,6 +125,19 @@ const CreateMonthlyCorrectionJobPage = () => {
         </div>
 
         <div>
+          <label htmlFor="job_year" className="block text-sm font-medium text-gray-700 mb-1">Tahun Pekerjaan</label>
+          <input
+            type="number"
+            id="job_year"
+            name="job_year"
+            value={formData.job_year}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            required
+          />
+        </div>
+
+        <div>
           <label htmlFor="assigned_pic_staff_sigma_id" className="block text-sm font-medium text-gray-700 mb-1">Staf PIC yang Ditugaskan</label>
           <select
             id="assigned_pic_staff_sigma_id"
@@ -149,45 +156,45 @@ const CreateMonthlyCorrectionJobPage = () => {
           </select>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="job_year" className="block text-sm font-medium text-gray-700 mb-1">Tahun</label>
-              <input
-                type="number"
-                id="job_year"
-                name="job_year"
-                value={formData.job_year}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
+        <div className="border border-gray-200 p-4 rounded-md shadow-sm">
+          <h3 className="text-lg font-bold mb-2 text-gray-800">Laporan</h3>
+          {formData.reports.map((report, index) => (
+            <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`is_reported_${index}`}
+                  name="is_reported"
+                  checked={report.is_reported}
+                  onChange={(e) => handleReportChange(e, index)}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label htmlFor={`is_reported_${index}`} className="ml-2 block text-sm font-medium text-gray-900">Sudah Dilaporkan</label>
+              </div>
+              <div>
+                <label htmlFor={`report_date_${index}`} className="block text-sm font-medium text-gray-700 mb-1">Tanggal Laporan</label>
+                <input
+                  type="date"
+                  id={`report_date_${index}`}
+                  name="report_date"
+                  value={report.report_date}
+                  onChange={(e) => handleReportChange(e, index)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor={`report_status_${index}`} className="block text-sm font-medium text-gray-700 mb-1">Status Laporan</label>
+                <input
+                  type="text"
+                  id={`report_status_${index}`}
+                  name="report_status"
+                  value={report.report_status}
+                  onChange={(e) => handleReportChange(e, index)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
             </div>
-            <div>
-              <label htmlFor="job_month" className="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
-              <select
-                id="job_month"
-                name="job_month"
-                value={formData.job_month}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="">Pilih Bulan</option>
-                {[...Array(12).keys()].map(i => (
-                  <option key={i + 1} value={i + 1}>{new Date(0, i).toLocaleString('id-ID', { month: 'long' })}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="correction_status" className="block text-sm font-medium text-gray-700 mb-1">Status Pembetulan</label>
-              <input
-                type="text"
-                id="correction_status"
-                name="correction_status"
-                value={formData.correction_status}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
+          ))}
         </div>
 
         <div className="flex justify-end space-x-4 mt-4">
@@ -211,4 +218,4 @@ const CreateMonthlyCorrectionJobPage = () => {
   );
 };
 
-export default CreateMonthlyCorrectionJobPage;
+export default CreateDividendJobPage;

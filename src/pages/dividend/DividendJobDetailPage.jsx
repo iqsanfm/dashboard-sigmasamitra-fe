@@ -5,11 +5,11 @@ import { getJobDetails, deleteJob, getJobFiles } from '../../utils/api';
 import UpdateJobStatusModal from '../../components/UpdateJobStatusModal';
 import ConfirmationModal from '../../components/ConfirmationModal';
 
-const MonthlyJobDetailPage = () => {
+const DividendJobDetailPage = () => {
   const { job_id } = useParams();
   const navigate = useNavigate();
   const { showNotification } = useNotification();
-  const job_type = 'monthly'; // Hardcode job_type
+  const job_type = 'dividend'; // Hardcode job_type
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ const MonthlyJobDetailPage = () => {
     try {
       await deleteJob(job_type, job_id);
       showNotification('Pekerjaan berhasil dihapus!', 'success');
-      navigate(`/dashboard/jobs/monthly`); // Navigate back to the monthly job list
+      navigate(`/dashboard/jobs/dividend`); // Navigate back to the dividend job list
     } catch (err) {
       showNotification(`Error: ${err.message || 'Gagal menghapus pekerjaan.'}`, 'error');
     } finally {
@@ -74,11 +74,11 @@ const MonthlyJobDetailPage = () => {
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg">
       <h1 className="text-3xl font-bold mb-4 text-gray-800">
-        Detail Pekerjaan Bulanan: {job.client_name}
+        Detail Pekerjaan Dividend: {job.client_name}
       </h1>
       <div className="mb-4 flex space-x-3">
         <Link
-          to={`/dashboard/jobs/monthly/${job_id}/edit`}
+          to={`/dashboard/jobs/dividend/${job_id}/edit`}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md"
         >
           Edit Pekerjaan
@@ -96,7 +96,7 @@ const MonthlyJobDetailPage = () => {
           Hapus
         </button>
         <Link
-          to={`/dashboard/create-correction/monthly/${job_id}`}
+          to={`/dashboard/create-correction/dividend/${job_id}`}
           className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md shadow-md"
         >
           Buat Pembetulan
@@ -106,43 +106,33 @@ const MonthlyJobDetailPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">ID Pekerjaan</p><p className="text-lg text-gray-900">{job.job_id}</p></div>
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Nama Klien</p><p className="text-lg text-gray-900">{job.client_name}</p></div>
-        <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Bulan Pekerjaan</p><p className="text-lg text-gray-900">{job.job_month ? new Date(0, job.job_month - 1).toLocaleString('id-ID', { month: 'long' }) : '-'}</p></div>
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Tahun Pekerjaan</p><p className="text-lg text-gray-900">{job.job_year}</p></div>
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Nama PIC</p><p className="text-lg text-gray-900">{job.assigned_pic_staff_sigma_name}</p></div>
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Status</p><p className="text-lg font-medium text-blue-600">{job.overall_status}</p></div>
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Status Koreksi</p><p className="text-lg text-gray-900">{job.correction_status || '-'}</p></div>
-        <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Jenis Pekerjaan</p><p className="text-lg text-gray-900">{job.job_type}</p></div>
-        {job.job_type === 'CORRECTION' && (
-          <>
-            <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Tipe Koreksi</p><p className="text-lg text-gray-900">{job.correction_type}</p></div>
-            <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">ID Pekerjaan Asli</p><p className="text-lg text-gray-900">{job.original_job_id}</p></div>
-          </>
-        )}
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Terakhir Diperbarui</p><p className="text-lg text-gray-900">{new Date(job.updated_at).toLocaleString('id-ID')}</p></div>
       </div>
 
-      {job.tax_reports && job.tax_reports.length > 0 && (
+      {job.reports && job.reports.length > 0 && (
         <div className="mt-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">Laporan Pajak Terkait</h3>
+          <h3 className="text-xl font-bold text-gray-800 mb-4">Laporan Terkait</h3>
           <div className="overflow-x-auto bg-white rounded-lg shadow">
             <table className="min-w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Pajak</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Billing</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Bayar</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Laporan</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Laporan</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Laporan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sudah Dilaporkan?</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {job.tax_reports.map((report) => (
+                {job.reports.map((report) => (
                   <tr key={report.report_id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.tax_type}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.billing_code}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(report.payment_amount)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.report_id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.report_status}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(report.report_date).toLocaleDateString('id-ID')}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.is_reported ? 'Ya' : 'Tidak'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -194,4 +184,4 @@ const MonthlyJobDetailPage = () => {
   );
 };
 
-export default MonthlyJobDetailPage;
+export default DividendJobDetailPage;

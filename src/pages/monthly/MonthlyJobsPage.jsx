@@ -196,6 +196,7 @@ const MonthlyJobsPage = () => {
                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Klien</th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Bulan</th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Status</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Jenis</th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Status Koreksi</th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">PIC</th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Terakhir Diperbarui</th>
@@ -206,10 +207,7 @@ const MonthlyJobsPage = () => {
               {jobs.map((job) => (
                 <tr key={job.job_id}>
                   <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.client_name}</td>
-                
-                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.job_month || '-'}</td>
-                
-              
+                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.job_month ? new Date(0, job.job_month - 1).toLocaleString('id-ID', { month: 'long' }) : '-'}</td>
                   <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">
                     <span className={`py-1 px-2 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-full
                       ${job.overall_status === 'Selesai' ? 'bg-green-100 text-green-800' :
@@ -217,6 +215,12 @@ const MonthlyJobsPage = () => {
                         'bg-gray-100 text-gray-800'}`}
                     >
                       {job.overall_status}
+                    </span>
+                  </td>
+                  <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">
+                    <span className={`py-1 px-2 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-full
+                      ${job.job_type === 'NORMAL' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                      {job.job_type}
                     </span>
                   </td>
                   <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.correction_status || '-'}</td>

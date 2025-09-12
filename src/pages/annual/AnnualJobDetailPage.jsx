@@ -110,8 +110,43 @@ const AnnualJobDetailPage = () => {
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Nama PIC</p><p className="text-lg text-gray-900">{job.assigned_pic_staff_sigma_name}</p></div>
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Status</p><p className="text-lg font-medium text-blue-600">{job.overall_status}</p></div>
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Status Koreksi</p><p className="text-lg text-gray-900">{job.correction_status || '-'}</p></div>
+        <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Jenis Pekerjaan</p><p className="text-lg text-gray-900">{job.job_type}</p></div>
+        {job.job_type === 'CORRECTION' && (
+          <>
+            <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Tipe Koreksi</p><p className="text-lg text-gray-900">{job.correction_type}</p></div>
+            <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">ID Pekerjaan Asli</p><p className="text-lg text-gray-900">{job.original_job_id}</p></div>
+          </>
+        )}
         <div className="bg-gray-50 p-4 rounded-md"><p className="text-sm font-semibold text-gray-600">Terakhir Diperbarui</p><p className="text-lg text-gray-900">{new Date(job.updated_at).toLocaleString('id-ID')}</p></div>
       </div>
+
+      {job.tax_reports && job.tax_reports.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-xl font-bold text-gray-800 mb-4">Laporan Pajak Terkait</h3>
+          <div className="overflow-x-auto bg-white rounded-lg shadow">
+            <table className="min-w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Billing</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Bayar</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Laporan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Laporan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {job.tax_reports.map((report) => (
+                  <tr key={report.report_id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.billing_code}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(report.payment_amount)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.report_status}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(report.report_date).toLocaleDateString('id-ID')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {jobFiles.length > 0 && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg shadow-inner">

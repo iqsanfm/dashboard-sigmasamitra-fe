@@ -29,8 +29,17 @@ const apiFetch = async (path, options = {}) => {
   const response = await fetch(url, { ...options, headers });
 
   if (!response.ok) {
+    // Special case for DELETE: a 404 is considered a success, as the resource is gone.
+    if (options.method === 'DELETE' && response.status === 404) {
+      return { success: true }; // Treat as success
+    }
     const errorData = await response.json().catch(() => ({ error: 'Invalid JSON response' }));
     throw new Error(errorData.error || `API request failed with status ${response.status}`);
+  }
+
+  // Handle 204 No Content for successful requests that don't return a body
+  if (response.status === 204) {
+    return { success: true };
   }
 
   return response.json();
@@ -110,6 +119,22 @@ export const getSp2dkJobs = (filters = {}, pagination = {}) => {
   return apiFetch('sp2dk-jobs/', { params });
 };
 
+export const getDividendJobs = (filters = {}, pagination = {}) => {
+  const params = {
+    ...filters,
+    page: pagination.page,
+    limit: pagination.limit,
+  };
+  // Remove undefined or null values from params
+  Object.keys(params).forEach(key => {
+    if (params[key] === undefined || params[key] === null || params[key] === '') {
+      delete params[key];
+    }
+  });
+
+  return apiFetch('dividend-jobs/', { params });
+};
+
 // New function to update a job
 export const updateJob = (jobType, jobId, jobData) => {
   const formattedJobType = `${jobType.toLowerCase().replace(/\s+/g, '-')}-jobs`;
@@ -147,6 +172,13 @@ export const createTaxReport = (jobType, jobId, reportData) => {
 export const updateTaxReport = (jobType, jobId, reportId, reportData) => {
   const formattedJobType = `${jobType.toLowerCase().replace(/\s+/g, '-')}-jobs`;
   return apiFetch(`${formattedJobType}/${jobId}/tax-reports/${reportId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(reportData),
+  });
+};
+
+export const updateDividendReport = (jobId, reportId, reportData) => {
+  return apiFetch(`dividend-jobs/${jobId}/dividend-reports/${reportId}`, {
     method: 'PATCH',
     body: JSON.stringify(reportData),
   });

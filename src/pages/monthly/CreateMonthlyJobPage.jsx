@@ -85,11 +85,11 @@ const CreateMonthlyJobPage = () => {
 
       const payload = {
         ...formData,
-        job_year: parseInt(formData.job_year),
-        job_month: parseInt(formData.job_month),
+        job_year: parseInt(formData.job_year, 10),
+        job_month: parseInt(formData.job_month, 10),
         tax_reports: formData.reports.map(report => ({
           ...report,
-          payment_amount: parseInt(report.payment_amount),
+          payment_amount: parseInt(report.payment_amount, 10) || 0,
         })),
       };
       delete payload.reports; // Remove the temporary reports array

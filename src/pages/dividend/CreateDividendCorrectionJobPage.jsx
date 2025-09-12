@@ -3,17 +3,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useNotification } from '../../contexts/NotificationContext';
 import { createJob, getClients, getJobDetails, getStaffs } from '../../utils/api';
 
-const CreateMonthlyCorrectionJobPage = () => {
+const CreateDividendCorrectionJobPage = () => {
   const navigate = useNavigate();
   const { showNotification } = useNotification();
   const { original_job_id } = useParams();
-  const originalJobType = 'monthly';
+  const originalJobType = 'dividend';
 
   const [formData, setFormData] = useState({
     client_id: '',
     assigned_pic_staff_sigma_id: '',
     job_year: '',
-    job_month: '',
     overall_status: 'pending',
     correction_status: '',
     original_job_id: original_job_id
@@ -50,7 +49,6 @@ const CreateMonthlyCorrectionJobPage = () => {
         client_id: originalJobData.client_id || '',
         assigned_pic_staff_sigma_id: originalJobData.assigned_pic_staff_sigma_id || '',
         job_year: originalJobData.job_year || '',
-        job_month: originalJobData.job_month || '',
         overall_status: originalJobData.overall_status || 'pending',
       }));
     };
@@ -81,19 +79,17 @@ const CreateMonthlyCorrectionJobPage = () => {
 
       const payload = {
         ...formData,
-        job_year: parseInt(formData.job_year, 10),
-        job_month: parseInt(formData.job_month, 10),
         job_type: "CORRECTION",
         correction_type: formData.correction_status,
       };
       delete payload.correction_status;
 
-      await createJob('monthly', payload);
+      await createJob('dividend', payload);
       showNotification('Pekerjaan pembetulan berhasil dibuat!', 'success');
-      navigate('/dashboard/jobs/monthly');
+      navigate('/dashboard/jobs/dividend');
     } catch (err) {
       setError(err.message || 'Gagal membuat pekerjaan pembetulan.');
-      showNotification(`Error: ${err.message || 'Gagal membuat pekerjaan pembetulan bulanan.'}`, 'error');
+      showNotification(`Error: ${err.message || 'Gagal membuat pekerjaan pembetulan dividend.'}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -109,7 +105,7 @@ const CreateMonthlyCorrectionJobPage = () => {
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Buat Pekerjaan Pembetulan Bulanan Baru</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Buat Pekerjaan Pembetulan Dividend Baru</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="client_id" className="block text-sm font-medium text-gray-700 mb-1">Klien</label>
@@ -162,21 +158,6 @@ const CreateMonthlyCorrectionJobPage = () => {
               />
             </div>
             <div>
-              <label htmlFor="job_month" className="block text-sm font-medium text-gray-700 mb-1">Bulan</label>
-              <select
-                id="job_month"
-                name="job_month"
-                value={formData.job_month}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="">Pilih Bulan</option>
-                {[...Array(12).keys()].map(i => (
-                  <option key={i + 1} value={i + 1}>{new Date(0, i).toLocaleString('id-ID', { month: 'long' })}</option>
-                ))}
-              </select>
-            </div>
-            <div>
               <label htmlFor="correction_status" className="block text-sm font-medium text-gray-700 mb-1">Status Pembetulan</label>
               <input
                 type="text"
@@ -211,4 +192,4 @@ const CreateMonthlyCorrectionJobPage = () => {
   );
 };
 
-export default CreateMonthlyCorrectionJobPage;
+export default CreateDividendCorrectionJobPage;

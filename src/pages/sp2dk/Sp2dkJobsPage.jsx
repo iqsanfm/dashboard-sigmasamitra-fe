@@ -199,9 +199,6 @@ const Sp2dkJobPage = () => {
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">No. Kontrak</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Tgl. Kontrak</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">No. SP2DK</th>
-                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Tgl. SP2DK</th>
-                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">No. BAP2DK</th>
-                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Tgl. BAP2DK</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Status</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Status Koreksi</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">PIC</th>
@@ -218,13 +215,6 @@ const Sp2dkJobPage = () => {
                       {job.contract_date ? new Date(job.contract_date).toLocaleDateString() : '-'}
                     </td>
                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.sp2dk_no}</td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">
-                      {job.sp2dk_date ? new Date(job.sp2dk_date).toLocaleDateString() : '-'}
-                    </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.bap2dk_no}</td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">
-                      {job.bap2dk_date ? new Date(job.bap2dk_date).toLocaleDateString() : '-'}
-                    </td>
                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">
                       <span className={`py-1 px-2 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-full
                         ${job.overall_status === 'Selesai' ? 'bg-green-100 text-green-800' :

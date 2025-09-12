@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNotification } from '../../contexts/NotificationContext';
-import { getAnnualJobs, deleteJob } from '../../utils/api'; // Import deleteJob
+import { getDividendJobs, deleteJob } from '../../utils/api';
 import UpdateJobStatusModal from '../../components/UpdateJobStatusModal';
-import ConfirmationModal from '../../components/ConfirmationModal'; // Import ConfirmationModal
-import useDebounce from '../../hooks/useDebounce'; // Import useDebounce
+import ConfirmationModal from '../../components/ConfirmationModal';
+import useDebounce from '../../hooks/useDebounce';
 
-const AnnualJobsPage = () => {
+const DividendJobsPage = () => {
   const { showNotification } = useNotification();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,20 +26,20 @@ const AnnualJobsPage = () => {
   const [isUpdateStatusModalOpen, setIsUpdateStatusModalOpen] = useState(false);
   const [selectedJobForStatusUpdate, setSelectedJobForStatusUpdate] = useState(null);
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State for delete modal
-  const [selectedJobForDelete, setSelectedJobForDelete] = useState(null); // State for job to delete
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedJobForDelete, setSelectedJobForDelete] = useState(null);
 
-  const debouncedFilters = useDebounce(filters, 500); // Debounce filters with a 500ms delay
+  const debouncedFilters = useDebounce(filters, 500);
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getAnnualJobs(debouncedFilters, { page: pagination.page, limit: pagination.limit }); 
+      const data = await getDividendJobs(debouncedFilters, { page: pagination.page, limit: pagination.limit });
       setJobs(data || []);
       setPagination(prev => ({ ...prev, total: data.length || 0 }));
     } catch (err) {
-      setError(err.message || 'Gagal memuat pekerjaan tahunan.');
-      showNotification(`Error: ${err.message || 'Gagal memuat pekerjaan tahunan.'}`, 'error');
+      setError(err.message || 'Gagal memuat pekerjaan dividend.');
+      showNotification(`Error: ${err.message || 'Gagal memuat pekerjaan dividend.'}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,7 @@ const AnnualJobsPage = () => {
   };
 
   const handleStatusUpdated = () => {
-    fetchJobs(); // Re-fetch jobs after status update
+    fetchJobs();
   };
 
   const openDeleteModal = (job) => {
@@ -86,9 +86,9 @@ const AnnualJobsPage = () => {
   const handleDeleteConfirm = async () => {
     if (selectedJobForDelete) {
       try {
-        await deleteJob('annual', selectedJobForDelete.job_id); // 'annual' is the jobType for this page
+        await deleteJob('dividend', selectedJobForDelete.job_id);
         showNotification('Pekerjaan berhasil dihapus!', 'success');
-        fetchJobs(); // Re-fetch jobs after deletion
+        fetchJobs();
         closeDeleteModal();
       } catch (err) {
         showNotification(`Error: ${err.message || 'Gagal menghapus pekerjaan.'}`, 'error');
@@ -97,7 +97,7 @@ const AnnualJobsPage = () => {
   };
 
   if (loading) {
-    return <div className="p-4 text-center">Memuat pekerjaan tahunan...</div>;
+    return <div className="p-4 text-center">Memuat pekerjaan dividend...</div>;
   }
 
   if (error) {
@@ -106,14 +106,14 @@ const AnnualJobsPage = () => {
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg min-w-0">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Pekerjaan Tahunan</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Pekerjaan Dividend</h1>
 
       <div className="flex justify-between items-center mb-4">
         <Link 
-          to="/dashboard/create-job/annual"
+          to="/dashboard/create-job/dividend"
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md"
         >
-          Tambah Pekerjaan Tahunan
+          Tambah Pekerjaan Dividend
         </Link>
       </div>
 
@@ -181,7 +181,6 @@ const AnnualJobsPage = () => {
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Klien</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Tahun</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Status</th>
-                  <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Jenis</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Status Koreksi</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Staff PIC</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-r whitespace-nowrap">Terakhir Diperbarui</th>
@@ -202,12 +201,6 @@ const AnnualJobsPage = () => {
                         {job.overall_status}
                       </span>
                     </td>
-                    <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">
-                      <span className={`py-1 px-2 inline-flex justify-center items-center text-xs leading-5 font-semibold rounded-full
-                        ${job.job_type === 'NORMAL' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
-                        {job.job_type}
-                      </span>
-                    </td>
                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.correction_status}</td>
                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">{job.assigned_pic_staff_sigma_name}</td>
                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm border-r whitespace-nowrap">
@@ -216,7 +209,7 @@ const AnnualJobsPage = () => {
                     <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
                       <div className="flex flex-wrap gap-2">
                         <Link 
-                          to={`/dashboard/jobs/annual/${job.job_id}`} // Link to JobDetailPage
+                          to={`/dashboard/jobs/dividend/${job.job_id}`}
                           className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 py-1 px-2 rounded-md inline-flex items-center justify-center"
                           title="Detail"
                         >
@@ -225,7 +218,7 @@ const AnnualJobsPage = () => {
                           </svg>
                         </Link>
                         <Link
-                          to={`/dashboard/jobs/annual/${job.job_id}/edit`} // Link to EditJobPage
+                          to={`/dashboard/jobs/dividend/${job.job_id}/edit`}
                           className="bg-blue-100 text-blue-700 hover:bg-blue-200 py-1 px-2 rounded-md inline-flex items-center justify-center"
                           title="Edit"
                         >
@@ -260,7 +253,7 @@ const AnnualJobsPage = () => {
           </div>
         </div>
       ) : (
-        <p className="text-gray-600 text-center">Tidak ada pekerjaan tahunan yang ditemukan.</p>
+        <p className="text-gray-600 text-center">Tidak ada pekerjaan dividend yang ditemukan.</p>
       )}
 
       {/* Pagination */}
@@ -288,7 +281,7 @@ const AnnualJobsPage = () => {
         <UpdateJobStatusModal
           isOpen={isUpdateStatusModalOpen}
           onClose={closeUpdateStatusModal}
-          jobType={'annual'}
+          jobType={'dividend'}
           jobId={selectedJobForStatusUpdate.job_id}
           currentStatus={selectedJobForStatusUpdate.overall_status}
           onStatusUpdated={handleStatusUpdated}
@@ -308,4 +301,4 @@ const AnnualJobsPage = () => {
   );
 };
 
-export default AnnualJobsPage;
+export default DividendJobsPage;
